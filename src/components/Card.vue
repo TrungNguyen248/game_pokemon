@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="card">
+  <div class="card" :class="{ disabled: isDisabled }">
     <div
       class="card__inner"
       :class="{ 'is-flipped': isFlipped }"
@@ -10,7 +10,12 @@
         <div class="card__content">Front</div>
       </div>
       <div class="card__face card__face--back">
-        <div class="card__content">Back</div>
+        <div
+          class="card__content"
+          :style="{
+            backgroundImage: `url(${require('@/assets/' + imgBackFaceUrl)})`,
+          }"
+        ></div>
       </div>
     </div>
   </div>
@@ -18,14 +23,32 @@
 
 <script>
 export default {
+  props: {
+    card: {
+      type: [String, Number, Array, Object],
+    },
+    imgBackFaceUrl: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
+      isDisabled: false,
       isFlipped: false,
     };
   },
   methods: {
     onToggleFlipCard() {
+      if (this.isDisabled) return false;
       this.isFlipped = !this.isFlipped;
+      if (this.isFlipped) this.$emit("onFlip", this.card);
+    },
+    onFlipBackCard() {
+      this.isFlipped = false;
+    },
+    onEnableDisableMode() {
+      this.isDisabled = true;
     },
   },
 };
@@ -70,6 +93,7 @@ export default {
 
 .card__face--front .card__content {
   background: url("../assets/images/icon_back.png") no-repeat center center;
+  background-size: 40px 40px;
   height: 100%;
   width: 100%;
 }
