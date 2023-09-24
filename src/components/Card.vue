@@ -1,19 +1,44 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="card" :class="{ disabled: isDisabled }">
+  <div
+    class="card"
+    :class="{ disabled: isDisabled }"
+    :style="{
+      height: `${(920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16}px`,
+      width: `${
+        (((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4
+      }px`,
+      perspective: `${
+        ((((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4) * 2
+      }px`,
+    }"
+  >
     <div
       class="card__inner"
       :class="{ 'is-flipped': isFlipped }"
       @click="onToggleFlipCard"
     >
       <div class="card__face card__face--front">
-        <div class="card__content">Front</div>
+        <div
+          class="card__content"
+          :style="{
+            'background-size': `${
+              (((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) /
+              4 /
+              3
+            }px ${
+              (((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) /
+              4 /
+              3
+            }px`,
+          }"
+        ></div>
       </div>
       <div class="card__face card__face--back">
         <div
           class="card__content"
           :style="{
-            backgroundImage: `url(${require('@/assets/' + imgBackFaceUrl)})`,
+            backgroundImage: `url('${require('@/assets/' + imgBackFaceUrl)}')`,
           }"
         ></div>
       </div>
@@ -25,29 +50,41 @@
 export default {
   props: {
     card: {
-      type: [String, Number, Array, Object],
+      type: [Array, String, Number, Object],
+    },
+    cardsContext: {
+      type: Array,
+      default: function () {
+        return [];
+      },
     },
     imgBackFaceUrl: {
       type: String,
       required: true,
     },
+    rules: {
+      type: Array,
+    },
   },
   data() {
     return {
-      isDisabled: false,
       isFlipped: false,
+      isDisabled: false,
     };
   },
   methods: {
     onToggleFlipCard() {
-      if (this.isDisabled) return false;
+      if (this.rules.length >= 2) return;
+      if (this.isDisabled) return;
       this.isFlipped = !this.isFlipped;
       if (this.isFlipped) this.$emit("onFlip", this.card);
     },
+
     onFlipBackCard() {
       this.isFlipped = false;
     },
-    onEnableDisableMode() {
+
+    onEnabledDisabledMode() {
       this.isDisabled = true;
     },
   },
@@ -58,9 +95,7 @@ export default {
 .card {
   display: inline-block;
   margin-right: 1rem;
-  margin-left: 1rem;
-  width: 90px;
-  height: 120px;
+  margin-bottom: 1rem;
 }
 
 .card__inner {
@@ -93,7 +128,6 @@ export default {
 
 .card__face--front .card__content {
   background: url("../assets/images/icon_back.png") no-repeat center center;
-  background-size: 40px 40px;
   height: 100%;
   width: 100%;
 }

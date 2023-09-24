@@ -1,20 +1,31 @@
 <template>
   <div class="screen">
-    <h1>Interact here</h1>
-    <card-flip
-      v-for="(card, index) in cardsContext"
-      :key="index"
-      :ref="`card-${index}`"
-      :imgBackFaceUrl="`images/${card}.png`"
-      :card="{ index, value: card }"
-      @onFlip="checkRule($event, cardsContext)"
-    />
+    <div
+      class="screen__inner"
+      :style="{
+        width: `${
+          ((((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4 +
+            16) *
+          Math.sqrt(cardsContext.length)
+        }px`,
+      }"
+    >
+      <card-memmory
+        v-for="(card, index) in cardsContext"
+        :key="index"
+        :ref="`card-${index}`"
+        :cardsContext="cardsContext"
+        :imgBackFaceUrl="`images/${card}.png`"
+        :card="{ index, value: card }"
+        :rules="rules"
+        @onFlip="checkRule($event, cardsContext.length / 2)"
+      />
+    </div>
   </div>
 </template>
 
 <script>
-import CardFlip from "./Card.vue";
-
+import Card from "./Card.vue";
 export default {
   props: {
     cardsContext: {
@@ -24,37 +35,32 @@ export default {
       },
     },
   },
+  components: {
+    CardMemmory: Card,
+  },
   data() {
     return {
       rules: [],
       count: 0,
     };
   },
-  components: {
-    CardFlip,
-  },
   methods: {
-    checkRule(card, cardsContext) {
-      //console.log(card);
+    checkRule(card, pointFinish) {
       if (this.rules.length === 2) return false;
-
       this.rules.push(card);
-      //console.log(this.rules);
-
       if (
         this.rules.length === 2 &&
         this.rules[0].value === this.rules[1].value
       ) {
-        //console.log(this.count);
-        if (this.count == cardsContext.length / 2 - 1) {
+        if (this.count == pointFinish - 1) {
           setTimeout(() => {
+            //console.log("Done");
             this.$emit("onFinish");
-          }, 2000);
+          }, 1400);
         }
-        //add class disable to component card
-        this.$refs[`card-${this.rules[0].index}`][0].onEnableDisableMode();
-        this.$refs[`card-${this.rules[1].index}`][0].onEnableDisableMode();
-        //reset rules
+
+        this.$refs[`card-${this.rules[0].index}`][0].onEnabledDisabledMode();
+        this.$refs[`card-${this.rules[1].index}`][0].onEnabledDisabledMode();
         this.rules = [];
 
         this.count += 1;
@@ -63,7 +69,6 @@ export default {
         this.rules[0].value !== this.rules[1].value
       ) {
         setTimeout(() => {
-          console.log("Wrong");
           this.$refs[`card-${this.rules[0].index}`][0].onFlipBackCard();
           this.$refs[`card-${this.rules[1].index}`][0].onFlipBackCard();
           this.rules = [];
@@ -75,3 +80,23 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.screen {
+  width: 100%;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  background-color: var(--dark);
+  color: var(--light);
+}
+
+.screen__inner {
+  width: calc(424px);
+  display: flex;
+  flex-wrap: wrap;
+  margin: 2rem auto;
+}
+</style>
